@@ -16,6 +16,8 @@ type Playlist = {
 };
 
 export default function Dashboard() {
+  const isLoggedIn = Cookies.get("isLoggedIn") === "true";
+
   const router = useRouter();
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -31,13 +33,17 @@ export default function Dashboard() {
   }, []);
 
   const handleSpotifyConnectBtn = () => {
-    Cookies.set("connectedToSpotify", "true", { expires: 1 / 24 }); 
+    Cookies.set("connectedToSpotify", "true", { expires: 1 / 24, path: "/" });
   };
 
   useEffect(() => {
-    const connected = Cookies.get("connectedToSpotify") === "true";
-    setIsConnected(connected);
-  }, []);
+    if (!isLoggedIn) {
+      router.push("/");
+    } else {
+      const connected = Cookies.get("connectedToSpotify") === "true";
+      setIsConnected(connected);
+    }
+  }, [isLoggedIn]);
 
   return (
     <div className="relative flex flex-col items-center w-full h-screen mt-4">
@@ -47,12 +53,6 @@ export default function Dashboard() {
       </div>
       {isConnected && <UserStats />}
       <div className="mb-2">
-        {isConnected && <Link
-          href="/create-playlist"
-          className="border rounded-lg py-1 px-4 bg-green-400 border-green-400 transition ease-in-out duration-200 hover:bg-green-500 hover:scale-105 hover:shadow-md disabled:bg-gray-300 disabled:border-gray-300 disabled:hover:scale-100 disabled:opacity-50 disabled:hover:shadow-none"
-        >
-          Create Playlist
-        </Link> }
         {!isConnected && (
           <SpotifyConnect handleSpotifyConnectBtn={handleSpotifyConnectBtn} />
         )}
